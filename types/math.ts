@@ -397,7 +397,11 @@ export interface CashFlowValuation {
 /* Monte Carlo simulation                                              */
 /* ------------------------------------------------------------------ */
 
-export type SimulationKind = "actuarial-reserve" | "geometric-brownian-motion" | "pi-estimation";
+export type SimulationKind =
+  | "actuarial-reserve"
+  | "geometric-brownian-motion"
+  | "pi-estimation"
+  | "central-limit-theorem";
 
 export interface ActuarialReserveConfig {
   readonly kind: "actuarial-reserve";
@@ -430,10 +434,27 @@ export interface PiEstimationConfig {
   readonly seed: number;
 }
 
+/**
+ * Central Limit Theorem demonstration — the AP Statistics headline result.
+ *
+ * Each "path" draws `sampleSize` observations from `population` and records
+ * their mean. As `sampleSize` grows, the distribution of those means approaches
+ * Normal(μ, σ/√n) regardless of how skewed the population is.
+ */
+export interface CentralLimitConfig {
+  readonly kind: "central-limit-theorem";
+  readonly paths: number;
+  readonly seed: number;
+  /** Observations averaged per sample, the `n` in σ/√n. */
+  readonly sampleSize: number;
+  readonly population: DistributionParameters;
+}
+
 export type SimulationConfig =
   | ActuarialReserveConfig
   | GeometricBrownianMotionConfig
-  | PiEstimationConfig;
+  | PiEstimationConfig
+  | CentralLimitConfig;
 
 export interface HistogramBin {
   readonly start: number;

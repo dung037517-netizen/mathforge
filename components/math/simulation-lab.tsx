@@ -34,11 +34,18 @@ import {
   type SimulationHandle,
   type SimulationStrategy,
 } from "@/lib/simulation-client";
-import { describeSimulation } from "@/lib/math-engine";
+import { centralLimitPrediction, describeSimulation } from "@/lib/math-engine";
 import { cn, formatNumber } from "@/lib/utils";
-import type { EngineError, SimulationConfig, SimulationKind, SimulationSummary } from "@/types/math";
+import type {
+  DistributionParameters,
+  EngineError,
+  SimulationConfig,
+  SimulationKind,
+  SimulationSummary,
+} from "@/types/math";
 
 const SIMULATION_LABELS: Readonly<Record<SimulationKind, string>> = {
+  "central-limit-theorem": "Central Limit Theorem (AP Statistics)",
   "actuarial-reserve": "Aggregate death-benefit reserve",
   "geometric-brownian-motion": "Terminal asset price (GBM)",
   "pi-estimation": "Monte Carlo estimate of π",
@@ -51,7 +58,33 @@ const SIMULATION_FORMULAE: Readonly<Record<SimulationKind, string>> = {
   "geometric-brownian-motion":
     "S_T = S_0\\exp\\!\\left[\\left(\\mu - \\tfrac{\\sigma^2}{2}\\right)T + \\sigma\\sqrt{T}\\,Z\\right]",
   "pi-estimation": "\\pi \\approx \\frac{4}{n}\\sum_{i=1}^{n}\\mathbb{1}\\{U_i^2 + V_i^2 \\le 1\\}",
+  "central-limit-theorem":
+    "\\bar{X}_n = \\frac{1}{n}\\sum_{i=1}^{n} X_i \\;\\xrightarrow{\\;d\\;}\\; \\mathcal{N}\\!\\left(\\mu,\\ \\frac{\\sigma^2}{n}\\right)",
 };
+
+/** Skewed populations make the CLT's convergence visually obvious. */
+const CLT_POPULATIONS = ["exponential", "uniform", "lognormal", "poisson"] as const;
+type CltPopulationKind = (typeof CLT_POPULATIONS)[number];
+
+const CLT_POPULATION_LABELS: Readonly<Record<CltPopulationKind, string>> = {
+  exponential: "Exponential (strongly right-skewed)",
+  uniform: "Uniform (flat, no peak)",
+  lognormal: "Lognormal (heavy right tail)",
+  poisson: "Poisson (discrete counts)",
+};
+
+function cltPopulation(kind: CltPopulationKind): DistributionParameters {
+  switch (kind) {
+    case "exponential":
+      return { kind: "exponential", lambda: 1 };
+    case "uniform":
+      return { kind: "uniform", a: 0, b: 1 };
+    case "lognormal":
+      return { kind: "lognormal", mu: 0, sigma: 0.75 };
+    case "poisson":
+      return { kind: "poisson", lambda: 3 };
+  }
+}
 
 interface LabState {
   readonly kind: SimulationKind;
@@ -65,11 +98,15 @@ interface LabState {
   readonly drift: number;
   readonly volatility: number;
   readonly horizonYears: number;
+  readonly sampleSize: number;
+  readonly populationKind: CltPopulationKind;
 }
 
 const INITIAL_STATE: LabState = {
-  kind: "actuarial-reserve",
-  paths: 50_000,
+  // Opens on the AP Statistics demonstration so the panel means something to a
+  // reviewer before they touch a single control.
+  kind: "central-limit-theorem",
+  paths: 40_000,
   seed: 20_260_801,
   age: 45,
   policies: 250,
@@ -79,10 +116,20 @@ const INITIAL_STATE: LabState = {
   drift: 0.07,
   volatility: 0.2,
   horizonYears: 1,
+  sampleSize: 30,
+  populationKind: "exponential",
 };
 
 function buildConfig(state: LabState): SimulationConfig {
   switch (state.kind) {
+    case "central-limit-theorem":
+      return {
+        kind: "central-limit-theorem",
+        paths: state.paths,
+        seed: state.seed,
+        sampleSize: state.sampleSize,
+        population: cltPopulation(state.populationKind),
+      };
     case "actuarial-reserve":
       return {
         kind: "actuarial-reserve",
@@ -117,6 +164,13 @@ function buildConfig(state: LabState): SimulationConfig {
  */
 function analyticBenchmark(state: LabState): { label: string; value: number } | null {
   switch (state.kind) {
+    case "central-limit-theorem":
+      // The CLT predicts the sampling distribution is centred on the population
+      // mean, whatever the population's own shape.
+      return {
+        label: "μ (population mean)",
+        value: centralLimitPrediction(cltPopulation(state.populationKind), state.sampleSize).mean,
+      };
     case "actuarial-reserve":
       // E[e^{-δT}] = μ/(μ+δ) under a constant force, scaled by the cohort size.
       return {
@@ -303,6 +357,47 @@ export function SimulationLab({ className }: SimulationLabProps) {
         </div>
 
         <div className="space-y-4 rounded-lg border border-border bg-surface p-4">
+          {state.kind === "central-limit-theorem" && (
+            <>
+              <div className="space-y-1.5">
+                <Label htmlFor="clt-population">Population shape</Label>
+                <Select
+                  value={state.populationKind}
+                  onValueChange={(value) =>
+                    update("populationKind", value as CltPopulationKind)
+                  }
+                >
+                  <SelectTrigger id="clt-population">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CLT_POPULATIONS.map((kind) => (
+                      <SelectItem key={kind} value={kind}>
+                        {CLT_POPULATION_LABELS[kind]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <LabSlider
+                id="clt-sample-size"
+                label="sample size"
+                latex="n"
+                value={state.sampleSize}
+                min={1}
+                max={200}
+                step={1}
+                onChange={(value) => update("sampleSize", Math.round(value))}
+                format={(value) => String(Math.round(value))}
+              />
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Set <span className="numeric">n = 1</span> to see the raw population shape, then
+                raise it. The histogram becomes symmetric and bell-shaped no matter which
+                population you pick — that is the theorem.
+              </p>
+            </>
+          )}
+
           {state.kind === "actuarial-reserve" && (
             <>
               <LabSlider
@@ -538,6 +633,61 @@ export function SimulationLab({ className }: SimulationLabProps) {
                   </div>
                 ))}
               </dl>
+
+              {state.kind === "central-limit-theorem" && (
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Does the theorem hold?
+                  </p>
+                  {(() => {
+                    // Compare the simulated spread of sample means against the
+                    // CLT's prediction of σ/√n. Agreement is the whole point.
+                    const prediction = centralLimitPrediction(
+                      cltPopulation(state.populationKind),
+                      state.sampleSize,
+                    );
+                    const relativeError =
+                      prediction.standardError > 0
+                        ? Math.abs(summary.standardDeviation - prediction.standardError) /
+                          prediction.standardError
+                        : 0;
+                    return (
+                      <>
+                        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Predicted σ/√n</p>
+                            <p className="numeric text-sm font-semibold">
+                              {formatNumber(prediction.standardError, 5)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Simulated spread</p>
+                            <p className="numeric text-sm font-semibold">
+                              {formatNumber(summary.standardDeviation, 5)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Relative error</p>
+                            <p
+                              className={cn(
+                                "numeric text-sm font-semibold",
+                                relativeError < 0.05 ? "text-success" : "text-warning",
+                              )}
+                            >
+                              {(relativeError * 100).toFixed(2)}%
+                            </p>
+                          </div>
+                        </div>
+                        <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground">
+                          {relativeError < 0.05
+                            ? `The simulated spread matches σ/√n to within ${(relativeError * 100).toFixed(2)}% — the Central Limit Theorem is reproduced numerically, from a population that is not remotely normal.`
+                            : "The spread has not yet converged — raise the path count to tighten the estimate."}
+                        </p>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border border-border bg-surface p-4">

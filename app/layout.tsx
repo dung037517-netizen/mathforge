@@ -18,30 +18,57 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const TITLE = "MathForge — SAT/AP Calculus Learning Platform";
+const DESCRIPTION =
+  "An interactive learning platform for SAT and AP Calculus AB/BC and AP Statistics. Symbolic " +
+  "differentiation and integration with complete step-by-step derivations, interactive graphing, " +
+  "linear algebra, and a Central Limit Theorem simulator — computed entirely in the browser by a " +
+  "dependency-free engine, with every topic linked to the actuarial technique it becomes.";
+const SITE_URL = "https://mathforge-blush.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "MathForge — Actuarial & Probability Computing Workbench",
+    default: TITLE,
     template: "%s · MathForge",
   },
-  description:
-    "An interactive workbench for actuarial science and quantitative finance: step-by-step " +
-    "symbolic calculus, dense linear algebra, parametric survival models, life contingencies, " +
-    "and non-blocking Monte Carlo simulation — all computed client-side.",
+  description: DESCRIPTION,
+  applicationName: "MathForge",
+  authors: [{ name: "Dung Nguyen", url: "https://github.com/dung037517-netizen" }],
+  creator: "Dung Nguyen",
   keywords: [
+    "AP Calculus AB",
+    "AP Calculus BC",
+    "AP Statistics",
+    "SAT math",
+    "step-by-step derivatives",
+    "definite integrals",
+    "Central Limit Theorem",
+    "Monte Carlo simulation",
     "actuarial science",
     "survival models",
     "life contingencies",
-    "Monte Carlo simulation",
-    "symbolic differentiation",
-    "linear algebra",
-    "quantitative finance",
   ],
-  authors: [{ name: "MathForge" }],
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "MathForge — Actuarial & Probability Computing Workbench",
+    title: TITLE,
     description:
-      "Symbolic calculus, survival models, life contingencies and Monte Carlo simulation in the browser.",
+      "Step-by-step AP Calculus and Statistics, solved in the browser by a dependency-free engine " +
+      "— with every topic linked to the actuarial technique it becomes.",
+    url: SITE_URL,
+    siteName: "MathForge",
     type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description:
+      "Step-by-step AP Calculus and Statistics, solved in the browser by a dependency-free engine.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

@@ -1,8 +1,8 @@
 <div align="center">
 
-# MathForge
+# MathForge — SAT/AP Calculus Learning Platform
 
-**An interactive actuarial & probability computing workbench that runs entirely in your browser.**
+**Step-by-step AP Calculus and Statistics, solved in your browser by an engine written from first principles.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -11,10 +11,11 @@
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-0055FF?style=flat-square&logo=framer&logoColor=white)](https://motion.dev)
 [![KaTeX](https://img.shields.io/badge/KaTeX-0.16-329894?style=flat-square)](https://katex.org)
 [![Recharts](https://img.shields.io/badge/Recharts-3-22B5BF?style=flat-square)](https://recharts.org)
-[![Tests](https://img.shields.io/badge/tests-43_passing-3fb950?style=flat-square&logo=vitest&logoColor=white)](./tests/math-engine.test.ts)
+[![Tests](https://img.shields.io/badge/tests-48_passing-3fb950?style=flat-square&logo=vitest&logoColor=white)](./tests/math-engine.test.ts)
+[![AP problems](https://img.shields.io/badge/AP_problems-12_worked-f78166?style=flat-square)](./lib/ap-curriculum.ts)
 [![Runtime math dependencies](https://img.shields.io/badge/runtime_math_deps-0-8957e5?style=flat-square)](./lib/math-engine.ts)
 
-[Live demo](https://mathforge-blush.vercel.app) · [Computation engine](./lib/math-engine.ts) · [Test suite](./tests/math-engine.test.ts) · [FinHub Tracker →](https://github.com/dung037517-netizen/financeflow)
+[🚀 **Live demo**](https://mathforge-blush.vercel.app) · [Computation engine](./lib/math-engine.ts) · [Test suite](./tests/math-engine.test.ts) · [FinHub Tracker →](https://github.com/dung037517-netizen/financeflow)
 
 </div>
 
@@ -22,24 +23,71 @@
 
 ## What this is
 
-MathForge parses, differentiates, integrates, factorises and simulates — with **no computer-algebra
-library behind it**. The expression parser, the symbolic differentiator, the adaptive quadrature,
-the dense linear algebra, the special functions, the mortality laws and the Monte Carlo engine are
-all implemented from first principles in [`lib/math-engine.ts`](./lib/math-engine.ts) — strict
-TypeScript, zero uses of `any`.
+A learning platform for **SAT / AP Calculus AB & BC and AP Statistics** that shows the *method*,
+not just the answer. Type a function — or pick one of twelve exam-style prompts — and the engine
+differentiates or integrates it and prints the complete argument, naming every rule it applies.
+
+It is built with **no computer-algebra library behind it**. The expression parser, the symbolic
+differentiator, the adaptive quadrature, the dense linear algebra, the special functions and the
+Monte Carlo engine are all implemented from first principles in
+[`lib/math-engine.ts`](./lib/math-engine.ts) — strict TypeScript, zero uses of `any`.
 
 That constraint is the point. Anyone can wire up a library; the interesting engineering is in
 getting a Lanczos log-gamma to agree with a continued-fraction incomplete gamma to twelve decimal
-places, and in proving it with tests that check against closed-form actuarial identities.
+places, and in proving it with tests that check against closed-form results.
 
-## Four things it does
+---
+
+## 💡 Actuarial Science & Math Foundation
+
+> **Why a calculus study tool is built on actuarial mathematics.**
+>
+> Every AP topic in this platform is annotated with the professional technique it becomes. That
+> annotation is not decoration — it is the reason the project exists. The mathematics on the AP
+> exam *is* the mathematics of risk; the only thing that changes is what the symbols are called.
+>
+> | AP topic | What it becomes in actuarial practice |
+> |---|---|
+> | **Chain rule** on $e^{-x^2/2}$ | You have just differentiated the standard normal density — the kernel behind Value at Risk and every option Greek. |
+> | **Product rule** on (amount) × (probability) | The sensitivity of a reserve. Every insurance liability is a product of a payout and a chance it happens. |
+> | **Quotient rule** | Loss ratios and funded ratios are quotients; their rate of change drives solvency triggers. |
+> | **Improper integrals** (BC) | $\int_0^\infty e^{-\delta t}dt = 1/\delta$ is the present value of a perpetuity. Add a survival probability and it becomes $\bar{a}_x$, a life annuity. |
+> | **Exponential decay** $e^{-\delta t}$ | The discount factor. Its derivative with respect to time is a bond's duration. |
+> | **Area under a curve** | $\int_0^\infty {}_tp_x\,dt$ is the complete expectation of life, $\mathring{e}_x$. |
+> | **Normal distribution** (AP Stats) | The 1.96 behind a 95% confidence interval is the same 1.96 inside a parametric VaR. |
+> | **Central Limit Theorem** | Why an insurer can price a block of 10,000 policies far more confidently than a single one — risk pooling is the CLT with money attached. |
+> | **Expected value** $\int x f(x)\,dx$ | Under a constant force of mortality this integral *is* $\mathring{e}_x = 1/\mu$. |
+>
+> The platform makes this concrete: the same adaptive Simpson routine that evaluates
+> $\int_0^\pi \sin x\,dx = 2$ for an AB student also computes $\bar{A}_x$ for a whole-life policy,
+> and the workbench displays $\bar{A}_x + \delta\bar{a}_x$ live — a quantity that must equal exactly
+> 1, so any error in the quadrature is visible on screen.
+
+---
+
+## What it does
 
 | | |
 |---|---|
+| **AP curriculum, worked in full** | Twelve exam-style prompts across Calculus AB, BC and Statistics. Selecting one loads it into the solver and produces a complete derivation — not a lookup table of answers. |
 | **Symbolic calculus** | A hand-written recursive-descent parser feeds a differentiator that names every rule it applies — product, quotient, chain, generalised power, and logarithmic differentiation for cases like `x^x`. |
+| **AP Statistics simulation** | A Central Limit Theorem laboratory: average a strongly skewed population and watch the sampling distribution become normal, with the simulated spread checked against $\sigma/\sqrt{n}$ on screen. |
 | **Dense linear algebra** | LU factorisation with partial pivoting for determinants, Gauss-Jordan for inverses, reduced row echelon form for rank, and cyclic Jacobi rotations for symmetric eigenvalues. |
-| **Life contingencies** | Five parametric mortality laws, with ₜpₓ, e̊ₓ, Āₓ, āₓ and the net premium obtained by adaptive Simpson quadrature over the model's own support. |
+| **Where the maths leads** | Five parametric mortality laws, with ₜpₓ, e̊ₓ, Āₓ, āₓ and the net premium obtained by adaptive Simpson quadrature over the model's own support. |
 | **Non-blocking simulation** | Seeded Monte Carlo running in a Web Worker, with a cooperative main-thread scheduler as a fallback. Neither path can produce a long task. |
+
+---
+
+## Zero cold start
+
+The landing page is fully computed before a reviewer touches anything: a worked product-rule
+derivation is on screen at first paint, the graphing canvas is plotted, and the Monte Carlo panel
+opens on the Central Limit Theorem. A **🚀 Explore a worked AP problem** button in the hero loads
+the flagship problem and scrolls to it in one click.
+
+Measured cold load to network-idle: **~1.1 s**, with 25 KaTeX expressions already typeset.
+
+---
 
 ---
 
@@ -48,12 +96,13 @@ places, and in proving it with tests that check against closed-form actuarial id
 ```mermaid
 flowchart TB
     subgraph UI["Presentation — React 19 client components"]
+        AP["ap-curriculum-lab.tsx<br/><i>12 AP problems, one click to solve</i>"]
         EI["equation-input.tsx<br/><i>palette · validation · live preview</i>"]
         AV["actuarial-visualizer.tsx<br/><i>densities · survival curves</i>"]
         SS["solution-steps.tsx<br/><i>animated derivation accordion</i>"]
         GC["graphing-canvas.tsx"]
         MW["matrix-workbench.tsx"]
-        SL["simulation-lab.tsx"]
+        SL["simulation-lab.tsx<br/><i>opens on the CLT</i>"]
     end
 
     subgraph DOM["Domain — types/math.ts"]
@@ -68,6 +117,7 @@ flowchart TB
         LIN["LU · Gauss-Jordan · Jacobi"]
         SPEC["logΓ · P(a,x) · erf · Φ · Φ⁻¹"]
         SURV["Survival models → ₜpₓ, e̊ₓ, Āₓ, āₓ"]
+        SAMP["Distribution sampling<br/><i>inverse transform · Marsaglia-Tsang</i>"]
         MC["Batched, resumable<br/>Monte Carlo runner"]
     end
 
@@ -77,6 +127,7 @@ flowchart TB
         FB["Cooperative scheduler<br/><i>one batch per animation frame</i>"]
     end
 
+    AP -->|"loads a problem"| EI
     EI --> LEX
     GC --> EVAL
     MW --> LIN
@@ -87,6 +138,7 @@ flowchart TB
 
     LEX --> EVAL --> DIFF --> INT
     SPEC --> SURV --> MC
+    SPEC --> SAMP --> MC
     LIN --> T
     SURV --> T
     DIFF --> T
@@ -231,7 +283,7 @@ Numerical code that isn't pinned against known values is decoration. The suite c
 against results that can be verified independently.
 
 ```
-✓ 43 tests passing
+✓ 48 tests passing
 ```
 
 | What is asserted | Against |
@@ -246,6 +298,9 @@ against results that can be verified independently.
 | GBM terminal mean over 120,000 paths | $S_0e^{\mu T}$ |
 | $A\cdot A^{-1} = I$, a $3\times3$ determinant, Jacobi eigenvalues | hand-computed values |
 | $\Phi(\Phi^{-1}(p)) = p$ across seven probabilities | round-trip to 1e-10 |
+| CLT: simulated spread of sample means | the predicted $\sigma/\sqrt{n}$, within 5% |
+| CLT: skewness of the sampling distribution | falls from 2.0 to below 0.5 as $n$ goes 1 → 30 |
+| Sampling from all nine distributions | their closed-form mean and variance |
 | Identical seeds produce identical results | reproducibility |
 
 ```bash
@@ -267,6 +322,8 @@ mathforge/
 │   └── globals.css             # oklch design tokens, light and dark
 ├── components/
 │   ├── math/
+│   │   ├── mathforge-app.tsx   # hero + all sections, owns the demo signal
+│   │   ├── ap-curriculum-lab.tsx  # the 12 AP problems
 │   │   ├── equation-input.tsx  # palette · validation · KaTeX preview
 │   │   ├── actuarial-visualizer.tsx
 │   │   ├── solution-steps.tsx  # animated derivation accordion
@@ -280,6 +337,7 @@ mathforge/
 │   └── site/site-header.tsx
 ├── lib/
 │   ├── math-engine.ts          # the whole computation core
+│   ├── ap-curriculum.ts        # AP problem set + actuarial links
 │   ├── simulation-client.ts    # worker / main-thread strategy selection
 │   ├── workers/simulation.worker.ts
 │   ├── theme.ts                # useSyncExternalStore theme store

@@ -8,6 +8,7 @@ import {
   conditionalSurvival,
   continuousLifeAnnuity,
   createMatrix,
+  centralLimitPrediction,
   createSimulation,
   determinant,
   differentiate,
@@ -26,6 +27,7 @@ import {
   normalCdf,
   normalQuantile,
   parse,
+  sampleDistributionValue,
   sampleFutureLifetime,
   simplify,
   solveDerivative,
@@ -33,11 +35,16 @@ import {
   survivalProbability,
   symmetricEigenvalues,
   toLatex,
+  validateSimulationConfig,
   valueCashFlows,
   wholeLifeInsurance,
   SeededRandom,
 } from "@/lib/math-engine";
-import type { Matrix, SurvivalModelParameters } from "@/types/math";
+import type {
+  DistributionParameters,
+  Matrix,
+  SurvivalModelParameters,
+} from "@/types/math";
 
 /** Unwrap a Result, failing the test with the engine's own message. */
 function unwrap<T>(result: { ok: true; value: T } | { ok: false; error: { message: string } }): T {
@@ -472,5 +479,115 @@ describe("Monte Carlo simulation", () => {
     const summary = simulation.finish(0);
     const total = summary.histogram.reduce((sum, bin) => sum + bin.count, 0);
     expect(total).toBe(5000);
+  });
+});
+
+describe("Central Limit Theorem", () => {
+  it("samples each distribution with the right mean and variance", () => {
+    const cases: readonly DistributionParameters[] = [
+      { kind: "normal", mu: 3, sigma: 2 },
+      { kind: "exponential", lambda: 0.5 },
+      { kind: "uniform", a: -2, b: 6 },
+      { kind: "gamma", shape: 3, rate: 2 },
+      { kind: "gamma", shape: 0.4, rate: 1 },
+      { kind: "weibull", shape: 2, scale: 3 },
+      { kind: "lognormal", mu: 0, sigma: 0.5 },
+      { kind: "poisson", lambda: 4 },
+      { kind: "binomial", n: 12, p: 0.3 },
+      { kind: "geometric", p: 0.25 },
+    ];
+
+    for (const parameters of cases) {
+      const random = new SeededRandom(4242);
+      const draws: number[] = [];
+      for (let i = 0; i < 40_000; i += 1) {
+        draws.push(sampleDistributionValue(parameters, random));
+      }
+
+      const empiricalMean = draws.reduce((sum, value) => sum + value, 0) / draws.length;
+      const empiricalVariance =
+        draws.reduce((sum, value) => sum + (value - empiricalMean) ** 2, 0) / (draws.length - 1);
+
+      const { mean, variance } = distributionMoments(parameters);
+
+      // Within 4 standard errors of the theoretical mean.
+      const standardError = Math.sqrt(variance / draws.length);
+      expect(Math.abs(empiricalMean - mean)).toBeLessThan(4 * standardError + 1e-9);
+      // Variance within 8% is ample for 40k draws across these shapes.
+      expect(Math.abs(empiricalVariance - variance) / variance).toBeLessThan(0.08);
+    }
+  });
+
+  it("predicts the sampling distribution's centre and spread", () => {
+    const population: DistributionParameters = { kind: "exponential", lambda: 1 };
+    const prediction = centralLimitPrediction(population, 25);
+    expect(prediction.mean).toBeCloseTo(1, 10);
+    // σ = 1 for Exponential(1), so the standard error is 1/√25 = 0.2.
+    expect(prediction.standardError).toBeCloseTo(0.2, 10);
+  });
+
+  it("reproduces σ/√n from a strongly skewed population", () => {
+    const population: DistributionParameters = { kind: "exponential", lambda: 1 };
+
+    for (const sampleSize of [1, 5, 30]) {
+      const simulation = createSimulation({
+        kind: "central-limit-theorem",
+        paths: 60_000,
+        seed: 1234,
+        sampleSize,
+        population,
+      });
+      simulation.runBatch(60_000);
+      const summary = simulation.finish(0);
+      const prediction = centralLimitPrediction(population, sampleSize);
+
+      expect(Math.abs(summary.mean - prediction.mean)).toBeLessThan(0.02);
+      // The simulated spread must match σ/√n to within a few percent.
+      expect(
+        Math.abs(summary.standardDeviation - prediction.standardError) /
+          prediction.standardError,
+      ).toBeLessThan(0.05);
+    }
+  });
+
+  it("drives the sampling distribution toward symmetry as n grows", () => {
+    const population: DistributionParameters = { kind: "exponential", lambda: 1 };
+
+    const skewAt = (sampleSize: number): number => {
+      const random = new SeededRandom(77);
+      const means: number[] = [];
+      for (let path = 0; path < 20_000; path += 1) {
+        let total = 0;
+        for (let i = 0; i < sampleSize; i += 1) {
+          total += sampleDistributionValue(population, random);
+        }
+        means.push(total / sampleSize);
+      }
+      const mean = means.reduce((sum, value) => sum + value, 0) / means.length;
+      const sd = Math.sqrt(
+        means.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (means.length - 1),
+      );
+      return (
+        means.reduce((sum, value) => sum + ((value - mean) / sd) ** 3, 0) / means.length
+      );
+    };
+
+    // Exponential(1) has skewness 2; averaging drives it toward 0 as 2/√n.
+    const skew1 = Math.abs(skewAt(1));
+    const skew30 = Math.abs(skewAt(30));
+    expect(skew1).toBeGreaterThan(1.5);
+    expect(skew30).toBeLessThan(0.5);
+    expect(skew30).toBeLessThan(skew1);
+  });
+
+  it("rejects an out-of-range sample size", () => {
+    const result = validateSimulationConfig({
+      kind: "central-limit-theorem",
+      paths: 100,
+      seed: 1,
+      sampleSize: 0,
+      population: { kind: "normal", mu: 0, sigma: 1 },
+    });
+    expect(result.ok).toBe(false);
   });
 });

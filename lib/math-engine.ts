@@ -25,6 +25,7 @@
 import type {
   ActuarialReserveConfig,
   BinaryNode,
+  CentralLimitConfig,
   BinaryOperator,
   CallNode,
   CashFlow,
@@ -3305,6 +3306,103 @@ class BatchedSimulationRunner implements BatchedSimulation {
   }
 }
 
+/**
+ * Draw a single observation from any supported distribution.
+ *
+ * Continuous laws use inverse-transform sampling where the quantile function is
+ * closed-form, Marsaglia-Tsang for the gamma (whose quantile is not), and
+ * direct construction for the discrete laws. Every branch consumes the seeded
+ * generator, so an entire sampling experiment is reproducible.
+ */
+export function sampleDistributionValue(
+  parameters: DistributionParameters,
+  random: SeededRandom,
+): number {
+  switch (parameters.kind) {
+    case "normal":
+      return parameters.mu + parameters.sigma * random.nextNormal();
+
+    case "lognormal":
+      return Math.exp(parameters.mu + parameters.sigma * random.nextNormal());
+
+    case "exponential":
+      return -Math.log(random.nextOpen()) / parameters.lambda;
+
+    case "uniform":
+      return parameters.a + (parameters.b - parameters.a) * random.next();
+
+    case "weibull":
+      return parameters.scale * Math.pow(-Math.log(random.nextOpen()), 1 / parameters.shape);
+
+    case "gamma": {
+      // Marsaglia-Tsang. The method requires shape >= 1, so a smaller shape is
+      // boosted and corrected by the standard u^(1/α) scaling.
+      const { shape, rate } = parameters;
+      if (shape < 1) {
+        const boosted = sampleDistributionValue(
+          { kind: "gamma", shape: shape + 1, rate },
+          random,
+        );
+        return boosted * Math.pow(random.nextOpen(), 1 / shape);
+      }
+      const d = shape - 1 / 3;
+      const c = 1 / Math.sqrt(9 * d);
+      for (;;) {
+        const z = random.nextNormal();
+        const v = Math.pow(1 + c * z, 3);
+        if (v <= 0) continue;
+        const u = random.nextOpen();
+        if (Math.log(u) < 0.5 * z * z + d - d * v + d * Math.log(v)) {
+          return (d * v) / rate;
+        }
+      }
+    }
+
+    case "binomial": {
+      let successes = 0;
+      for (let trial = 0; trial < parameters.n; trial += 1) {
+        if (random.next() < parameters.p) successes += 1;
+      }
+      return successes;
+    }
+
+    case "poisson": {
+      const { lambda } = parameters;
+      // Knuth's product method is exact but costs O(λ) draws, so large means
+      // fall back to inverting the CDF against a single uniform.
+      if (lambda < 30) {
+        const limit = Math.exp(-lambda);
+        let count = 0;
+        let product = random.nextOpen();
+        while (product > limit) {
+          count += 1;
+          product *= random.nextOpen();
+        }
+        return count;
+      }
+      const u = random.nextOpen();
+      let k = Math.max(0, Math.floor(lambda + Math.sqrt(lambda) * normalQuantile(u) - 3));
+      while (distributionCdf(parameters, k) < u && k < lambda * 10 + 100) k += 1;
+      return k;
+    }
+
+    case "geometric":
+      return Math.ceil(Math.log(random.nextOpen()) / Math.log(1 - parameters.p));
+  }
+}
+
+function centralLimitDraw(config: CentralLimitConfig): (random: SeededRandom) => number {
+  const size = Math.max(1, Math.floor(config.sampleSize));
+  const population = config.population;
+  return (random: SeededRandom): number => {
+    let total = 0;
+    for (let i = 0; i < size; i += 1) {
+      total += sampleDistributionValue(population, random);
+    }
+    return total / size;
+  };
+}
+
 function reserveDraw(config: ActuarialReserveConfig): (random: SeededRandom) => number {
   const { policies, benefit, forceOfInterest, survival, age } = config;
   return (random: SeededRandom): number => {
@@ -3358,6 +3456,13 @@ export function createSimulation(config: SimulationConfig): BatchedSimulation {
         const y = random.next();
         return x * x + y * y <= 1 ? 4 : 0;
       });
+    case "central-limit-theorem":
+      return new BatchedSimulationRunner(
+        paths,
+        "central-limit-theorem",
+        config.seed,
+        centralLimitDraw(config),
+      );
   }
 }
 
@@ -3398,6 +3503,15 @@ export function validateSimulationConfig(config: SimulationConfig): Result<Simul
 
     case "pi-estimation":
       return ok(config);
+
+    case "central-limit-theorem":
+      if (config.sampleSize < 1) {
+        return fail("DOMAIN_ERROR", "Each sample needs at least one observation.");
+      }
+      if (config.sampleSize > 5000) {
+        return fail("DOMAIN_ERROR", "Sample sizes above 5,000 are refused to protect the browser.");
+      }
+      return ok(config);
   }
 }
 
@@ -3429,5 +3543,22 @@ export function describeSimulation(config: SimulationConfig): string {
       return `Terminal price of a GBM asset after ${config.horizonYears} year(s) with μ = ${config.drift} and σ = ${config.volatility}.`;
     case "pi-estimation":
       return "Rejection-sampling estimate of π from uniform points in the unit square.";
+    case "central-limit-theorem":
+      return `Distribution of the sample mean for n = ${config.sampleSize} drawn from a ${config.population.kind} population.`;
   }
+}
+
+/**
+ * What the Central Limit Theorem predicts for a given population and sample
+ * size: the sampling distribution of the mean tends to Normal(μ, σ/√n).
+ */
+export function centralLimitPrediction(
+  population: DistributionParameters,
+  sampleSize: number,
+): { readonly mean: number; readonly standardError: number } {
+  const moments = distributionMoments(population);
+  return {
+    mean: moments.mean,
+    standardError: moments.standardDeviation / Math.sqrt(Math.max(1, sampleSize)),
+  };
 }

@@ -13,6 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ApCurriculumLab } from "@/components/math/ap-curriculum-lab";
+import { DEFAULT_AP_PROBLEM, type ApProblem } from "@/lib/ap-curriculum";
 import { solveDefiniteIntegral, solveDerivative } from "@/lib/math-engine";
 import type { EngineError, Solution } from "@/types/math";
 
@@ -40,13 +42,16 @@ function initialSolution(): Solution | null {
  * The unified solver: one expression drives the derivation, the plot, and the
  * definite integral, so switching modes never means retyping the problem.
  */
-export function Workbench() {
+export function Workbench({ demoSignal = 0 }: { demoSignal?: number }) {
   const [source, setSource] = React.useState(INITIAL_SOURCE);
   const [mode, setMode] = React.useState<SolverMode>("derivative");
   const [lower, setLower] = React.useState("0");
   const [upper, setUpper] = React.useState("3.14159265");
   const [solution, setSolution] = React.useState<Solution | null>(initialSolution);
   const [error, setError] = React.useState<EngineError | null>(null);
+  const [activeProblemId, setActiveProblemId] = React.useState<string>(
+    DEFAULT_AP_PROBLEM.id,
+  );
 
   const solve = React.useCallback(
     (nextSource: string, nextMode: SolverMode) => {
@@ -71,6 +76,44 @@ export function Workbench() {
     [lower, upper],
   );
 
+  /**
+   * Load an AP problem into the solver.
+   *
+   * The limits are pushed into state *and* passed straight to `solve`, because
+   * `solve` closes over the current `lower`/`upper` strings — reading them back
+   * from state here would use the previous problem's bounds for one render.
+   */
+  const loadProblem = React.useCallback((problem: ApProblem): void => {
+    setActiveProblemId(problem.id);
+    setSource(problem.expression);
+    setMode(problem.mode);
+
+    const nextLower = problem.lower ?? 0;
+    const nextUpper = problem.upper ?? 1;
+    setLower(String(nextLower));
+    setUpper(String(nextUpper));
+
+    const result =
+      problem.mode === "derivative"
+        ? solveDerivative(problem.expression, "x")
+        : solveDefiniteIntegral(problem.expression, "x", nextLower, nextUpper);
+
+    if (result.ok) {
+      setSolution(result.value);
+      setError(null);
+    } else {
+      setSolution(null);
+      setError(result.error);
+    }
+  }, []);
+
+  // The hero's demo button re-applies the flagship problem.
+  const [lastSignal, setLastSignal] = React.useState(demoSignal);
+  if (demoSignal !== lastSignal) {
+    setLastSignal(demoSignal);
+    loadProblem(DEFAULT_AP_PROBLEM);
+  }
+
   const handleModeChange = (value: string): void => {
     const nextMode: SolverMode = value === "integral" ? "integral" : "derivative";
     setMode(nextMode);
@@ -78,142 +121,146 @@ export function Workbench() {
   };
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <div className="space-y-5">
-        <Card>
-          <CardHeader className="border-b border-border">
-            <CardTitle className="flex items-center gap-2">
-              <FunctionSquare className="size-4 text-primary" aria-hidden />
-              Symbolic solver
-            </CardTitle>
-            <CardDescription>
-              Differentiate or integrate an expression and read the full argument, rule by rule.
-            </CardDescription>
-          </CardHeader>
+    <div className="space-y-5">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="space-y-5">
+          <Card>
+            <CardHeader className="border-b border-border">
+              <CardTitle className="flex items-center gap-2">
+                <FunctionSquare className="size-4 text-primary" aria-hidden />
+                Symbolic solver
+              </CardTitle>
+              <CardDescription>
+                Differentiate or integrate an expression and read the full argument, rule by rule.
+              </CardDescription>
+            </CardHeader>
 
-          <CardContent className="space-y-4 pt-5">
-            <EquationInput
-              value={source}
-              onValueChange={setSource}
-              onSubmit={(_, nextSource) => solve(nextSource, mode)}
-              submitLabel={mode === "derivative" ? "Differentiate" : "Integrate"}
-              description="Standard infix notation. Implicit multiplication (2x, 3sin(x)) is understood."
-            />
+            <CardContent className="space-y-4 pt-5">
+              <EquationInput
+                value={source}
+                onValueChange={setSource}
+                onSubmit={(_, nextSource) => solve(nextSource, mode)}
+                submitLabel={mode === "derivative" ? "Differentiate" : "Integrate"}
+                description="Standard infix notation. Implicit multiplication (2x, 3sin(x)) is understood."
+              />
 
-            <Tabs value={mode} onValueChange={handleModeChange}>
-              <TabsList>
-                <TabsTrigger value="derivative">
-                  <Sparkles aria-hidden />
-                  Derivative
-                </TabsTrigger>
-                <TabsTrigger value="integral">
-                  <TrendingUp aria-hidden />
-                  Definite integral
-                </TabsTrigger>
-              </TabsList>
+              <Tabs value={mode} onValueChange={handleModeChange}>
+                <TabsList>
+                  <TabsTrigger value="derivative">
+                    <Sparkles aria-hidden />
+                    Derivative
+                  </TabsTrigger>
+                  <TabsTrigger value="integral">
+                    <TrendingUp aria-hidden />
+                    Definite integral
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="integral">
-                <div className="flex flex-wrap items-end gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="integral-lower">Lower limit</Label>
-                    <Input
-                      id="integral-lower"
-                      value={lower}
-                      onChange={(event) => setLower(event.target.value)}
-                      className="numeric w-32"
-                      inputMode="decimal"
-                    />
+                <TabsContent value="integral">
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="integral-lower">Lower limit</Label>
+                      <Input
+                        id="integral-lower"
+                        value={lower}
+                        onChange={(event) => setLower(event.target.value)}
+                        className="numeric w-32"
+                        inputMode="decimal"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="integral-upper">Upper limit</Label>
+                      <Input
+                        id="integral-upper"
+                        value={upper}
+                        onChange={(event) => setUpper(event.target.value)}
+                        className="numeric w-32"
+                        inputMode="decimal"
+                      />
+                    </div>
+                    <Button type="button" onClick={() => solve(source, "integral")}>
+                      Evaluate
+                    </Button>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="integral-upper">Upper limit</Label>
-                    <Input
-                      id="integral-upper"
-                      value={upper}
-                      onChange={(event) => setUpper(event.target.value)}
-                      className="numeric w-32"
-                      inputMode="decimal"
-                    />
-                  </div>
-                  <Button type="button" onClick={() => solve(source, "integral")}>
-                    Evaluate
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
+                </TabsContent>
+              </Tabs>
 
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Try:</span>
-              {EXAMPLES.map((example) => (
-                <button
-                  key={example.label}
-                  type="button"
-                  onClick={() => {
-                    setSource(example.source);
-                    solve(example.source, mode);
-                  }}
-                  className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
-                >
-                  {example.label}
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="border-b border-border">
-            <CardTitle className="flex items-center gap-2">
-              <Grid3x3 className="size-4 text-primary" aria-hidden />
-              Matrix tools
-            </CardTitle>
-            <CardDescription>
-              Determinant by LU factorisation, inverse by Gauss-Jordan elimination, rank from the
-              row echelon form, and Jacobi eigenvalues for symmetric matrices.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-5">
-            <MatrixWorkbench />
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="space-y-5">
-        <Card>
-          <CardHeader className="border-b border-border">
-            <div className="flex items-center justify-between gap-3">
-              <div className="space-y-1">
-                <CardTitle>Graphing canvas</CardTitle>
-                <CardDescription>
-                  The same expression, plotted with its derivative overlaid.
-                </CardDescription>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Try:</span>
+                {EXAMPLES.map((example) => (
+                  <button
+                    key={example.label}
+                    type="button"
+                    onClick={() => {
+                      setSource(example.source);
+                      solve(example.source, mode);
+                    }}
+                    className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+                  >
+                    {example.label}
+                  </button>
+                ))}
               </div>
-              <Badge variant="outline" className="shrink-0">
-                480 samples
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-5">
-            <GraphingCanvas source={source} />
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="border-b border-border">
-            <CardTitle>Step-by-step solution</CardTitle>
-            <CardDescription>
-              Every rule invoked, in the order the engine applied it.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-5">
-            {error !== null && (
-              <p className="mb-4 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-                {error.message}
-              </p>
-            )}
-            <SolutionSteps solution={solution} />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="border-b border-border">
+              <CardTitle className="flex items-center gap-2">
+                <Grid3x3 className="size-4 text-primary" aria-hidden />
+                Matrix tools
+              </CardTitle>
+              <CardDescription>
+                Determinant by LU factorisation, inverse by Gauss-Jordan elimination, rank from the
+                row echelon form, and Jacobi eigenvalues for symmetric matrices.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-5">
+              <MatrixWorkbench />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-5">
+          <Card>
+            <CardHeader className="border-b border-border">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <CardTitle>Graphing canvas</CardTitle>
+                  <CardDescription>
+                    The same expression, plotted with its derivative overlaid.
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="shrink-0">
+                  480 samples
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-5">
+              <GraphingCanvas source={source} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="border-b border-border">
+              <CardTitle>Step-by-step solution</CardTitle>
+              <CardDescription>
+                Every rule invoked, in the order the engine applied it.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-5">
+              {error !== null && (
+                <p className="mb-4 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                  {error.message}
+                </p>
+              )}
+              <SolutionSteps solution={solution} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      <ApCurriculumLab onSelect={loadProblem} activeId={activeProblemId} />
     </div>
   );
 }
