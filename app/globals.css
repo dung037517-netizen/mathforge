@@ -1,0 +1,236 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+/*
+ * MathForge design tokens.
+ * The workbench is dark-first: a deep slate canvas with a violet/cyan
+ * accent ramp chosen for AA contrast against the base surface.
+ */
+:root {
+  --background: oklch(0.145 0.02 275);
+  --foreground: oklch(0.965 0.006 275);
+
+  --surface: oklch(0.185 0.022 275);
+  --surface-raised: oklch(0.221 0.024 275);
+  --surface-sunken: oklch(0.162 0.02 275);
+
+  --card: oklch(0.185 0.022 275);
+  --card-foreground: oklch(0.965 0.006 275);
+
+  --popover: oklch(0.196 0.024 275);
+  --popover-foreground: oklch(0.965 0.006 275);
+
+  --primary: oklch(0.68 0.185 292);
+  --primary-foreground: oklch(0.145 0.02 275);
+
+  --secondary: oklch(0.253 0.028 275);
+  --secondary-foreground: oklch(0.94 0.008 275);
+
+  --accent: oklch(0.76 0.14 195);
+  --accent-foreground: oklch(0.145 0.02 275);
+
+  --muted: oklch(0.253 0.026 275);
+  --muted-foreground: oklch(0.705 0.024 275);
+
+  --destructive: oklch(0.63 0.21 25);
+  --destructive-foreground: oklch(0.98 0.01 25);
+
+  --success: oklch(0.72 0.16 155);
+  --warning: oklch(0.79 0.15 80);
+
+  --border: oklch(0.3 0.026 275);
+  --input: oklch(0.3 0.026 275);
+  --ring: oklch(0.68 0.185 292);
+
+  --chart-1: oklch(0.68 0.185 292);
+  --chart-2: oklch(0.76 0.14 195);
+  --chart-3: oklch(0.79 0.15 80);
+  --chart-4: oklch(0.72 0.16 155);
+  --chart-5: oklch(0.66 0.2 15);
+
+  --radius: 0.75rem;
+}
+
+/*
+ * Light theme is opt-in via [data-theme="light"] so the workbench keeps its
+ * dark identity while remaining usable for people who need a bright surface.
+ */
+[data-theme="light"] {
+  --background: oklch(0.985 0.004 275);
+  --foreground: oklch(0.205 0.022 275);
+
+  --surface: oklch(1 0 0);
+  --surface-raised: oklch(0.975 0.006 275);
+  --surface-sunken: oklch(0.955 0.008 275);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.205 0.022 275);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.205 0.022 275);
+
+  --primary: oklch(0.52 0.21 292);
+  --primary-foreground: oklch(0.99 0.005 292);
+
+  --secondary: oklch(0.945 0.01 275);
+  --secondary-foreground: oklch(0.28 0.024 275);
+
+  --accent: oklch(0.55 0.13 195);
+  --accent-foreground: oklch(0.99 0.005 195);
+
+  --muted: oklch(0.945 0.01 275);
+  --muted-foreground: oklch(0.48 0.02 275);
+
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.99 0.01 25);
+
+  --success: oklch(0.52 0.15 155);
+  --warning: oklch(0.62 0.15 80);
+
+  --border: oklch(0.9 0.012 275);
+  --input: oklch(0.9 0.012 275);
+  --ring: oklch(0.52 0.21 292);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklch, var(--primary) 35%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Respect users who ask the OS to reduce motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .grid-backdrop {
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in oklch, var(--border) 55%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--border) 55%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+
+  .aurora {
+    background:
+      radial-gradient(
+        60rem 30rem at 12% -10%,
+        color-mix(in oklch, var(--primary) 26%, transparent),
+        transparent 60%
+      ),
+      radial-gradient(
+        50rem 26rem at 92% 6%,
+        color-mix(in oklch, var(--accent) 22%, transparent),
+        transparent 62%
+      );
+  }
+
+  .text-gradient {
+    background: linear-gradient(100deg, var(--foreground) 8%, var(--primary) 52%, var(--accent) 96%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .numeric {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+}
+
+/* KaTeX inherits the app palette rather than shipping its own. */
+.katex {
+  color: inherit;
+  font-size: 1.02em;
+}
+
+.katex-display {
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.15rem 0;
+}
