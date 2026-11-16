@@ -1,8 +1,8 @@
 {
   "name": "mathforge",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Interactive Actuarial & Probability Computing Workbench",
+  "description": "SAT/AP Math Practice Platform: diagnose, practice and review, with step-by-step solutions and mock tests",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

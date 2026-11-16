@@ -87,6 +87,29 @@ export function summarizeBank(course?: CourseId): BankSummary {
   return { templates: templates.length, skills: skills.size, variants };
 }
 
+let auditedCount: number | null = null;
+
+/** How many question types carry a machine-checkable statement of their answer. */
+export function auditedTemplateCount(): number {
+  if (auditedCount !== null) return auditedCount;
+  let count = 0;
+  for (const template of TEMPLATES) {
+    try {
+      const question = buildQuestion(template, {
+        templateId: template.id,
+        seed: 1,
+        level: template.levels[0],
+        format: "choice",
+      });
+      if (question.audit !== undefined) count += 1;
+    } catch {
+      // A seed that does not build is not counted.
+    }
+  }
+  auditedCount = count;
+  return count;
+}
+
 /** Skills that have no template yet — must be empty in a shipped build. */
 export function uncoveredSkills(): readonly string[] {
   return SKILLS.filter((skill) => templatesForSkill(skill.id).length === 0).map((skill) => skill.id);

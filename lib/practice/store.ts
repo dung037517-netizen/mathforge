@@ -11,6 +11,7 @@
 import { finishMock } from "@/lib/practice/mock";
 import { isAnswered, isCorrect } from "@/lib/practice/question";
 import { addMiss, gradeCard } from "@/lib/practice/review";
+import { randomSeed } from "@/lib/practice/rng";
 import {
   clearProgress,
   emptyProgress,
@@ -40,6 +41,10 @@ export interface ProgressSnapshot {
   readonly demo: boolean;
   /** False if the browser refused the last write. */
   readonly persisted: boolean;
+  /** Wall-clock time of the last change, so rendering never has to read the clock. */
+  readonly now: number;
+  /** Fresh entropy for this visit; 0 until the page has hydrated. */
+  readonly sessionSeed: number;
 }
 
 const SERVER_SNAPSHOT: ProgressSnapshot = {
@@ -47,6 +52,8 @@ const SERVER_SNAPSHOT: ProgressSnapshot = {
   hydrated: false,
   demo: false,
   persisted: true,
+  now: 0,
+  sessionSeed: 0,
 };
 
 let snapshot: ProgressSnapshot = SERVER_SNAPSHOT;
@@ -68,18 +75,27 @@ function emit(): void {
 
 function commit(state: ProgressState): void {
   const persisted = snapshot.demo ? snapshot.persisted : saveProgress(storage(), state);
-  snapshot = { ...snapshot, state, persisted };
+  snapshot = { ...snapshot, state, persisted, now: Date.now() };
   emit();
 }
 
 function hydrate(): void {
   if (snapshot.hydrated) return;
-  snapshot = { state: loadProgress(storage(), Date.now()), hydrated: true, demo: false, persisted: true };
+  const now = Date.now();
+  snapshot = {
+    state: loadProgress(storage(), now),
+    hydrated: true,
+    demo: false,
+    persisted: true,
+    now,
+    sessionSeed: randomSeed(),
+  };
 }
 
 function onStorage(event: StorageEvent): void {
   if (event.key !== STORAGE_KEY || snapshot.demo) return;
-  snapshot = { ...snapshot, state: loadProgress(storage(), Date.now()) };
+  const now = Date.now();
+  snapshot = { ...snapshot, state: loadProgress(storage(), now), now };
   emit();
 }
 
@@ -223,20 +239,29 @@ export const progressStore = {
   reset(): void {
     stashed = null;
     clearProgress(storage());
-    snapshot = { state: emptyProgress(Date.now(), snapshot.state.course), hydrated: true, demo: false, persisted: true };
+    const now = Date.now();
+    snapshot = {
+      ...snapshot,
+      state: emptyProgress(now, snapshot.state.course),
+      hydrated: true,
+      demo: false,
+      persisted: true,
+      now,
+    };
     emit();
   },
 
   /** Show a simulated student without touching what is saved. */
   enterDemo(state: ProgressState): void {
     if (!snapshot.demo) stashed = snapshot.state;
-    snapshot = { ...snapshot, state, demo: true };
+    snapshot = { ...snapshot, state, demo: true, now: Date.now() };
     emit();
   },
 
   exitDemo(): void {
     if (!snapshot.demo) return;
-    snapshot = { ...snapshot, state: stashed ?? loadProgress(storage(), Date.now()), demo: false };
+    const now = Date.now();
+    snapshot = { ...snapshot, state: stashed ?? loadProgress(storage(), now), demo: false, now };
     stashed = null;
     emit();
   },

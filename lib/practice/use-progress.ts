@@ -16,26 +16,18 @@ export function useProgress(): ProgressSnapshot {
 }
 
 /**
- * The mastery report for a course. Recomputed only when the answer history
- * changes; the clock is read once per change, which is precise enough for a
- * 30-day half-life.
+ * The mastery report for a course, recomputed only when the answer history
+ * changes. The clock comes from the store (the time of the last change), so
+ * rendering stays a pure function of the snapshot.
  */
 export function useMastery(course: CourseId): MasteryReport {
-  const { state } = useProgress();
+  const { state, now } = useProgress();
   const attempts = state.attempts;
-  return useMemo(() => {
-    const latest = attempts.length > 0 ? attempts[attempts.length - 1].at : 0;
-    return computeMastery(attempts, course, Math.max(latest, clock()));
-  }, [attempts, course]);
+  return useMemo(() => computeMastery(attempts, course, now), [attempts, course, now]);
 }
 
 export function useTimeline(course: CourseId): TimelinePoint[] {
   const { state } = useProgress();
   const attempts = state.attempts;
   return useMemo(() => computeTimeline(attempts, course), [attempts, course]);
-}
-
-/** Wall-clock time, isolated so the hooks above stay easy to reason about. */
-function clock(): number {
-  return Date.now();
 }
