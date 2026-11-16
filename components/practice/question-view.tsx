@@ -105,12 +105,19 @@ export function QuestionView({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-        {label !== undefined ? <span className="font-medium text-foreground">{label}</span> : null}
-        <span>{question.title}</span>
-        <span aria-hidden>·</span>
-        <span>{LEVEL_LABELS[question.level]}</span>
-      </div>
+      {/* The name of the question type would give the method away, so it appears only afterwards. */}
+      {label !== undefined || revealed ? (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          {label !== undefined ? <span className="font-medium text-foreground">{label}</span> : null}
+          {revealed ? (
+            <>
+              <span>{question.title}</span>
+              <span aria-hidden>·</span>
+              <span>{LEVEL_LABELS[question.level]}</span>
+            </>
+          ) : null}
+        </div>
+      ) : null}
 
       <RichText text={question.stem} className="text-[1.02rem]" />
       {question.table !== undefined ? <DataTable table={question.table} /> : null}

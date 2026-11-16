@@ -59,14 +59,14 @@ export function buildSampleProgress(now: number, course: CourseId = "sat"): Prog
   const ability = new Map<string, number>();
   const growth = new Map<string, number>();
   for (const skill of skills) {
-    ability.set(skill.id, -0.9 + 0.5 * rng.normal());
-    growth.set(skill.id, 0.05 + 0.05 * rng.float());
+    ability.set(skill.id, -0.6 + 0.4 * rng.normal());
+    growth.set(skill.id, 0.05 + 0.04 * rng.float());
   }
-  // A couple of deliberately weak skills, so the report has something to say.
+  // A few deliberately weak skills, so the report has something to say.
   const weak = rng.shuffle(skills).slice(0, 3);
   for (const skill of weak) {
-    ability.set(skill.id, (ability.get(skill.id) ?? 0) - 0.9);
-    growth.set(skill.id, 0.015);
+    ability.set(skill.id, (ability.get(skill.id) ?? 0) - 0.7);
+    growth.set(skill.id, 0.012);
   }
 
   const attempts: AttemptRecord[] = [];
@@ -155,12 +155,13 @@ export function buildSampleProgress(now: number, course: CourseId = "sat"): Prog
     if (rng.bool(0.3)) continue; // a day off
 
     // Review whatever is due, then practice the weaker skills.
-    const due = cards.filter((card) => card.dueAt <= morning).slice(0, 5);
+    const due = cards.filter((card) => card.dueAt <= morning).slice(0, 24);
     due.forEach((card, index) => {
       const question = regenerate({ ...card, seed: mixSeed(`sample-review:${card.templateId}`, salt) % 0x7fffffff });
       salt += 1;
       if (question === null) return;
-      const theta = (ability.get(card.skillId) ?? 0) + 0.35;
+      // Having just read the worked solution, the student does better on a review than cold.
+      const theta = (ability.get(card.skillId) ?? 0) + 1.1;
       const correct = rng.bool(probabilityCorrect(theta, itemParameters(question.level, question.format)));
       attempts.push({
         templateId: question.templateId,
@@ -176,16 +177,16 @@ export function buildSampleProgress(now: number, course: CourseId = "sat"): Prog
       const outcome = gradeCard(cards, cardKey(card), correct, morning + index * 80_000);
       cards = outcome.cards;
       if (outcome.resolved) resolved += 1;
-      ability.set(card.skillId, (ability.get(card.skillId) ?? 0) + 0.03);
+      ability.set(card.skillId, (ability.get(card.skillId) ?? 0) + 0.5 * (growth.get(card.skillId) ?? 0));
     });
 
-    const count = rng.int(6, 12);
+    const count = rng.int(5, 9);
     for (let index = 0; index < count; index += 1) {
       const ranked = [...skills].sort((a, b) => (ability.get(a.id) ?? 0) - (ability.get(b.id) ?? 0));
       const skill = rng.bool(0.65) ? ranked[rng.int(0, Math.min(5, ranked.length - 1))] : rng.pick(skills);
       const question = pickQuestion(skill.id, salt);
       salt += 1;
-      if (question !== null) answer(question, morning + (index + 6) * 85_000, "practice", 40_000 + rng.int(0, 70_000));
+      if (question !== null) answer(question, morning + (index + 18) * 85_000, "practice", 40_000 + rng.int(0, 70_000));
     }
   }
 

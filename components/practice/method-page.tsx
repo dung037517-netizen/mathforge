@@ -8,7 +8,7 @@ import { CHOICE_GUESS, DISCRIMINATION } from "@/lib/practice/irt";
 import { COURSE_SD, DOMAIN_SD, HALF_LIFE_DAYS, MIN_EVIDENCE, SKILL_SD } from "@/lib/practice/mastery";
 import { BLUEPRINTS, ROUTING_THRESHOLD } from "@/lib/practice/mock";
 import { auditedTemplateCount, summarizeBank } from "@/lib/practice/registry";
-import { REVIEW_INTERVALS_DAYS } from "@/lib/practice/review";
+import { scheduleText, streakText } from "@/lib/practice/review";
 import { SKILLS } from "@/lib/practice/taxonomy";
 import { REPOSITORY_URL, TRADEMARK_NOTICE } from "@/lib/site";
 
@@ -109,8 +109,8 @@ export function MethodPage() {
             two times in three.
           </p>
           <p>
-            Missed questions enter a Leitner notebook and return after {REVIEW_INTERVALS_DAYS.slice(1).join(", ")} days.
-            A card is reviewed with a fresh variant — the same idea with new numbers — so it cannot be passed by
+            Missed questions enter a Leitner notebook and return the same day, then after {scheduleText()}; {streakText()}{" "}
+            correct answers in a row clear a card. A card is reviewed with a fresh variant — the same idea with new numbers — so it cannot be passed by
             remembering an answer.
           </p>
         </Section>

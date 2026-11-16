@@ -17,10 +17,24 @@ import { mixSeed } from "@/lib/practice/rng";
 import type { QuestionRef, ReviewCard } from "@/types/practice";
 
 /** Days a card waits in each box before it is due again. */
-export const REVIEW_INTERVALS_DAYS: readonly number[] = [0, 1, 3, 7, 14];
+export const REVIEW_INTERVALS_DAYS: readonly number[] = [0, 1, 3, 7];
 
 /** A card answered correctly in the last box is resolved. */
 export const FINAL_BOX = REVIEW_INTERVALS_DAYS.length - 1;
+
+const COUNT_WORDS: readonly string[] = ["zero", "one", "two", "three", "four", "five", "six"];
+
+/** "1, 3 and 7 days" — the waits between reviews, for explanatory text. */
+export function scheduleText(): string {
+  const waits = REVIEW_INTERVALS_DAYS.slice(1);
+  const head = waits.slice(0, -1).join(", ");
+  return `${head} and ${waits[waits.length - 1]} days`;
+}
+
+/** "four" — how many correct reviews in a row clear a card. */
+export function streakText(): string {
+  return COUNT_WORDS[REVIEW_INTERVALS_DAYS.length] ?? String(REVIEW_INTERVALS_DAYS.length);
+}
 
 export function cardKey(ref: QuestionRef): string {
   return questionKey(ref);

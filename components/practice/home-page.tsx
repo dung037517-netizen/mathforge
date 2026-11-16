@@ -25,7 +25,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { domainName, rankSkills } from "@/lib/practice/mastery";
 import { isAnswered } from "@/lib/practice/question";
 import { auditedTemplateCount, regenerate, summarizeBank } from "@/lib/practice/registry";
-import { dueCards } from "@/lib/practice/review";
+import { dueCards, scheduleText, streakText } from "@/lib/practice/review";
 import { buildSampleProgress } from "@/lib/practice/sample";
 import { progressStore } from "@/lib/practice/store";
 import { COURSES, getCourse, SKILLS } from "@/lib/practice/taxonomy";
@@ -64,8 +64,7 @@ const LOOP: readonly {
   {
     step: "3",
     title: "Review",
-    description:
-      "Every miss goes into a notebook and comes back after 1, 3, 7 and 14 days with new numbers, until you have answered it correctly five times in a row.",
+    description: `Every miss goes into a notebook and comes back after ${scheduleText()} with new numbers, until you have answered it correctly ${streakText()} times in a row.`,
     href: "/review",
     cta: "Open the notebook",
     icon: BookOpenCheck,

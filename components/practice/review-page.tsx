@@ -14,7 +14,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { isAnswered } from "@/lib/practice/question";
 import { regenerate } from "@/lib/practice/registry";
-import { cardKey, describeDue, dueCards, FINAL_BOX, freshVariant, REVIEW_INTERVALS_DAYS } from "@/lib/practice/review";
+import {
+  cardKey,
+  describeDue,
+  dueCards,
+  FINAL_BOX,
+  freshVariant,
+  REVIEW_INTERVALS_DAYS,
+  scheduleText,
+  streakText,
+} from "@/lib/practice/review";
 import { randomSeed } from "@/lib/practice/rng";
 import { progressStore } from "@/lib/practice/store";
 import { findSkill } from "@/lib/practice/taxonomy";
@@ -223,7 +232,7 @@ export function ReviewPage() {
     <PageShell width="narrow">
       <PageHeading
         title="Review"
-        description="Every question you miss is filed here and comes back on a widening schedule — the same day, then after 1, 3, 7 and 14 days — until you answer it correctly five times in a row."
+        description={`Every question you miss is filed here and comes back on a widening schedule — the same day, then after ${scheduleText()} — until you answer it correctly ${streakText()} times in a row.`}
       />
 
       <div className="grid gap-3 sm:grid-cols-3">

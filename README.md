@@ -1,21 +1,17 @@
 <div align="center">
 
-# MathForge — SAT/AP Calculus Learning Platform
+# MathForge — SAT/AP Math Practice Platform
 
-**Step-by-step AP Calculus and Statistics, solved in your browser by an engine written from first principles.**
+**Diagnose, practice, review: free practice for SAT Math, AP Calculus and AP Statistics, with step-by-step worked solutions and mock tests in the digital SAT format.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-0055FF?style=flat-square&logo=framer&logoColor=white)](https://motion.dev)
-[![KaTeX](https://img.shields.io/badge/KaTeX-0.16-329894?style=flat-square)](https://katex.org)
-[![Recharts](https://img.shields.io/badge/Recharts-3-22B5BF?style=flat-square)](https://recharts.org)
-[![Tests](https://img.shields.io/badge/tests-48_passing-3fb950?style=flat-square&logo=vitest&logoColor=white)](./tests/math-engine.test.ts)
-[![AP problems](https://img.shields.io/badge/AP_problems-12_worked-f78166?style=flat-square)](./lib/ap-curriculum.ts)
+[![Tests](https://img.shields.io/badge/tests-228_passing-3fb950?style=flat-square&logo=vitest&logoColor=white)](./tests)
+[![Question types](https://img.shields.io/badge/question_types-118-f78166?style=flat-square)](./lib/practice/templates)
 [![Runtime math dependencies](https://img.shields.io/badge/runtime_math_deps-0-8957e5?style=flat-square)](./lib/math-engine.ts)
 
-[🚀 **Live demo**](https://mathforge-blush.vercel.app) · [Computation engine](./lib/math-engine.ts) · [Test suite](./tests/math-engine.test.ts) · [FinHub Tracker →](https://github.com/dung037517-netizen/financeflow)
+[🚀 **Live site**](https://mathforge-blush.vercel.app) · [How it works](https://mathforge-blush.vercel.app/method) · [Question bank](./lib/practice/templates) · [Tests](./tests)
 
 </div>
 
@@ -23,356 +19,131 @@
 
 ## What this is
 
-A learning platform for **SAT / AP Calculus AB & BC and AP Statistics** that shows the *method*,
-not just the answer. Type a function — or pick one of twelve exam-style prompts — and the engine
-differentiates or integrates it and prints the complete argument, naming every rule it applies.
+A practice platform for **SAT Math, AP Calculus (AB with the BC additions) and AP Statistics**,
+built around one loop:
 
-It is built with **no computer-algebra library behind it**. The expression parser, the symbolic
-differentiator, the adaptive quadrature, the dense linear algebra, the special functions and the
-Monte Carlo engine are all implemented from first principles in
-[`lib/math-engine.ts`](./lib/math-engine.ts) — strict TypeScript, zero uses of `any`.
-
-That constraint is the point. Anyone can wire up a library; the interesting engineering is in
-getting a Lanczos log-gamma to agree with a continued-fraction incomplete gamma to twelve decimal
-places, and in proving it with tests that check against closed-form results.
-
----
-
-## 💡 Actuarial Science & Math Foundation
-
-> **Why a calculus study tool is built on actuarial mathematics.**
->
-> Every AP topic in this platform is annotated with the professional technique it becomes. That
-> annotation is not decoration — it is the reason the project exists. The mathematics on the AP
-> exam *is* the mathematics of risk; the only thing that changes is what the symbols are called.
->
-> | AP topic | What it becomes in actuarial practice |
-> |---|---|
-> | **Chain rule** on $e^{-x^2/2}$ | You have just differentiated the standard normal density — the kernel behind Value at Risk and every option Greek. |
-> | **Product rule** on (amount) × (probability) | The sensitivity of a reserve. Every insurance liability is a product of a payout and a chance it happens. |
-> | **Quotient rule** | Loss ratios and funded ratios are quotients; their rate of change drives solvency triggers. |
-> | **Improper integrals** (BC) | $\int_0^\infty e^{-\delta t}dt = 1/\delta$ is the present value of a perpetuity. Add a survival probability and it becomes $\bar{a}_x$, a life annuity. |
-> | **Exponential decay** $e^{-\delta t}$ | The discount factor. Its derivative with respect to time is a bond's duration. |
-> | **Area under a curve** | $\int_0^\infty {}_tp_x\,dt$ is the complete expectation of life, $\mathring{e}_x$. |
-> | **Normal distribution** (AP Stats) | The 1.96 behind a 95% confidence interval is the same 1.96 inside a parametric VaR. |
-> | **Central Limit Theorem** | Why an insurer can price a block of 10,000 policies far more confidently than a single one — risk pooling is the CLT with money attached. |
-> | **Expected value** $\int x f(x)\,dx$ | Under a constant force of mortality this integral *is* $\mathring{e}_x = 1/\mu$. |
->
-> The platform makes this concrete: the same adaptive Simpson routine that evaluates
-> $\int_0^\pi \sin x\,dx = 2$ for an AB student also computes $\bar{A}_x$ for a whole-life policy,
-> and the workbench displays $\bar{A}_x + \delta\bar{a}_x$ live — a quantity that must equal exactly
-> 1, so any error in the quadrature is visible on screen.
-
----
-
-## What it does
-
-| | |
+| Step | What happens |
 |---|---|
-| **AP curriculum, worked in full** | Twelve exam-style prompts across Calculus AB, BC and Statistics. Selecting one loads it into the solver and produces a complete derivation — not a lookup table of answers. |
-| **Symbolic calculus** | A hand-written recursive-descent parser feeds a differentiator that names every rule it applies — product, quotient, chain, generalised power, and logarithmic differentiation for cases like `x^x`. |
-| **AP Statistics simulation** | A Central Limit Theorem laboratory: average a strongly skewed population and watch the sampling distribution become normal, with the simulated spread checked against $\sigma/\sqrt{n}$ on screen. |
-| **Dense linear algebra** | LU factorisation with partial pivoting for determinants, Gauss-Jordan for inverses, reduced row echelon form for rank, and cyclic Jacobi rotations for symmetric eigenvalues. |
-| **Where the maths leads** | Five parametric mortality laws, with ₜpₓ, e̊ₓ, Āₓ, āₓ and the net premium obtained by adaptive Simpson quadrature over the model's own support. |
-| **Non-blocking simulation** | Seeded Monte Carlo running in a Web Worker, with a cooperative main-thread scheduler as a fallback. Neither path can produce a long task. |
+| **1. Diagnose** | A short adaptive test visits every skill of the course once and produces a first mastery estimate for each, with its uncertainty. |
+| **2. Practice** | Questions are drawn mostly from the weakest skills, at a difficulty matched to the student. Each comes with a worked solution and the specific mistake behind every wrong choice. |
+| **3. Review** | Every miss is filed in a notebook and returns after 1, 3 and 7 days — with new numbers — until it has been answered correctly four times in a row. |
 
----
+Around the loop: **timed mock tests** in the two-module adaptive format of the digital SAT Math
+section, and a **progress report** that tracks 36 skills over time.
 
-## Zero cold start
+There are no accounts, no ads and no server. Progress is stored in the student's own browser and
+can be exported as a file.
 
-The landing page is fully computed before a reviewer touches anything: a worked product-rule
-derivation is on screen at first paint, the graphing canvas is plotted, and the Monte Carlo panel
-opens on the Central Limit Theorem. A **🚀 Explore a worked AP problem** button in the hero loads
-the flagship problem and scrolls to it in one click.
+## The question bank
 
-Measured cold load to network-idle: **~1.1 s**, with 25 KaTeX expressions already typeset.
+Every question is original and is written as a small program — a *template* — rather than as text.
+Given a seed, a template picks numbers so the answer comes out clean, writes the question, builds
+the wrong choices from specific named mistakes, and writes the worked solution.
 
----
+- **118 templates** across 36 skills in 13 domains
+  ([SAT](./lib/practice/templates/sat-algebra.ts) ·
+  [AP Calculus](./lib/practice/templates/ap-calculus.ts) ·
+  [AP Statistics](./lib/practice/templates/ap-statistics.ts))
+- Multiple-choice and typed-answer formats; typed answers are graded with the SAT's own rule
+  (2/3 may be entered as `2/3`, `0.666` or `0.667`, but not `0.67`)
+- A question is fully determined by four values — template, seed, level, format — so a missed
+  question is stored in a few bytes and can always be rebuilt exactly
 
----
+### Answer keys are checked, not trusted
 
-## Architecture
+A template states, in plain infix, a fact its answer must satisfy. In the test suite an expression
+engine written from scratch for this project ([`lib/math-engine.ts`](./lib/math-engine.ts)) checks
+that fact independently — by direct evaluation, numerical differentiation, adaptive quadrature or a
+two-sided limit — for **30 seeds of every level and format of every template**. The same run
+compiles every formula with KaTeX in strict mode, rejects typesetting glitches such as `1x` or
+`+ -3`, and requires four distinct choices with a stated misconception behind each wrong one.
 
-```mermaid
-flowchart TB
-    subgraph UI["Presentation — React 19 client components"]
-        AP["ap-curriculum-lab.tsx<br/><i>12 AP problems, one click to solve</i>"]
-        EI["equation-input.tsx<br/><i>palette · validation · live preview</i>"]
-        AV["actuarial-visualizer.tsx<br/><i>densities · survival curves</i>"]
-        SS["solution-steps.tsx<br/><i>animated derivation accordion</i>"]
-        GC["graphing-canvas.tsx"]
-        MW["matrix-workbench.tsx"]
-        SL["simulation-lab.tsx<br/><i>opens on the CLT</i>"]
-    end
-
-    subgraph DOM["Domain — types/math.ts"]
-        T["Discriminated unions<br/>Result&lt;T, EngineError&gt;<br/><i>no any, no thrown strings</i>"]
-    end
-
-    subgraph ENG["Engine — lib/math-engine.ts (pure, dependency-free)"]
-        LEX["Lexer → Parser → AST"]
-        EVAL["Evaluator + LaTeX serialiser"]
-        DIFF["Symbolic differentiation<br/><i>emits SolutionStep[]</i>"]
-        INT["Adaptive Simpson quadrature"]
-        LIN["LU · Gauss-Jordan · Jacobi"]
-        SPEC["logΓ · P(a,x) · erf · Φ · Φ⁻¹"]
-        SURV["Survival models → ₜpₓ, e̊ₓ, Āₓ, āₓ"]
-        SAMP["Distribution sampling<br/><i>inverse transform · Marsaglia-Tsang</i>"]
-        MC["Batched, resumable<br/>Monte Carlo runner"]
-    end
-
-    subgraph OFF["Offload"]
-        SC["simulation-client.ts<br/><i>strategy selection</i>"]
-        WK["simulation.worker.ts<br/><i>dedicated Web Worker</i>"]
-        FB["Cooperative scheduler<br/><i>one batch per animation frame</i>"]
-    end
-
-    AP -->|"loads a problem"| EI
-    EI --> LEX
-    GC --> EVAL
-    MW --> LIN
-    AV --> SURV
-    AV --> SPEC
-    SS --> DIFF
-    SL --> SC
-
-    LEX --> EVAL --> DIFF --> INT
-    SPEC --> SURV --> MC
-    SPEC --> SAMP --> MC
-    LIN --> T
-    SURV --> T
-    DIFF --> T
-
-    SC -->|"Worker available"| WK
-    SC -->|"fallback"| FB
-    WK --> MC
-    FB --> MC
-    MC -->|"SimulationSummary"| SL
+```
+✓ 228 tests passing      npm test
 ```
 
-### Data flow for a single derivative
+A wrong answer key, a malformed formula or a duplicated choice fails the build.
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant EI as EquationInput
-    participant P as Parser
-    participant D as Differentiator
-    participant S as Simplifier
-    participant SS as SolutionSteps
+## The measurement model
 
-    U->>EI: types "x^2 * sin(x)"
-    EI->>P: parse (on a deferred value)
-    P-->>EI: AST or EngineError{code, position}
-    Note over EI: KaTeX preview re-renders<br/>on every keystroke
-    U->>EI: presses Enter
-    EI->>D: differentiate(ast, "x")
-    D->>D: detects a product of two non-constant factors
-    D->>D: recurses into each factor
-    D->>S: simplify(u'v + uv')
-    S-->>D: 2x·sin(x) + x²·cos(x)
-    D-->>SS: {node, SolutionStep[]}
-    SS-->>U: animated accordion with rule badges<br/>and nested sub-derivations
-```
+Described in full, with its limitations, on the site's
+[How it works](https://mathforge-blush.vercel.app/method) page. In brief:
 
----
+- **Response model.** Each question is a three-parameter logistic item,
+  $P(\text{correct}\mid\theta) = c + (1-c)\,\sigma\big(a(\theta-b)\big)$, with ability estimated by
+  exact Bayesian updating on a grid ([`irt.ts`](./lib/practice/irt.ts)).
+- **Hierarchical mastery.** Ability is modeled at three nested levels — course, domain, skill —
+  and the posterior is computed exactly by belief propagation on that tree
+  ([`mastery.ts`](./lib/practice/mastery.ts)). A skill with three answers is not judged on three
+  answers alone: it borrows strength from the rest of its domain in proportion to how little is
+  known about it. This is the partial pooling behind an actuarial credibility premium.
+- **Recency.** An answer's weight halves every 30 days.
+- **Honest uncertainty.** Every estimate is drawn with a one-standard-deviation band; below a
+  minimum amount of evidence a skill is labeled "Not enough data" and given no number.
+- **Selection.** Practice uses Thompson sampling over skills
+  ([`selection.ts`](./lib/practice/selection.ts)); the notebook is a Leitner system
+  ([`review.ts`](./lib/practice/review.ts)).
+- **Mock tests.** Two modules of 22 questions and 35 minutes, in the section's published domain
+  mix; the second module is assembled after the first is graded
+  ([`mock.ts`](./lib/practice/mock.ts)). The 200–800 figure is an estimate with a range.
 
-## Technical highlight: non-blocking client-side math parsing
+### What the numbers do not mean
 
-A Monte Carlo run of 500,000 paths is roughly a second of arithmetic. Done naively that is a
-one-second frozen tab — no scrolling, no cursor, no cancel button. MathForge never blocks, through
-three separate mechanisms rather than one.
+- Item parameters are **set by design, not calibrated on response data** — the site collects none.
+- The mock score is an **unofficial estimate** that has never been equated against real results.
+- The bank is broad, not complete.
 
-**1. Parsing is interruptible.** The equation editor parses a `useDeferredValue` copy of the input,
-not the input itself. React can abandon a stale parse-and-typeset pass when another keystroke
-arrives, so typing latency is bounded by the input handler and never by the parser.
+## Why a practice site is built on actuarial ideas
 
-```tsx
-const deferredValue = React.useDeferredValue(value);
-const parsed = React.useMemo(() => parse(deferredValue), [deferredValue]);
-```
-
-**2. Simulation is batched and resumable.** The core exposes a `BatchedSimulation` rather than a
-blocking `run()`. The caller decides how much work happens before control returns:
-
-```ts
-export interface BatchedSimulation {
-  readonly totalPaths: number;
-  runBatch(size: number): number;      // run up to `size` more paths
-  readonly completedPaths: number;
-  readonly isComplete: boolean;
-  finish(elapsedMs: number): SimulationSummary;
-}
-```
-
-**3. Execution is offloaded, with an honest fallback.** `runSimulation()` prefers a dedicated Web
-Worker. Where a worker cannot be constructed, the *same* batched runner is driven one batch per
-animation frame on the main thread — so the longest task is a single batch of a few milliseconds,
-and the page still never freezes. The UI reports which strategy actually ran, so the claim is
-observable rather than asserted.
-
-Because both paths share `createSimulation()`, results are **bit-for-bit identical for a given
-seed** regardless of which strategy executed.
-
----
-
-## Mathematics implemented
-
-### Calculus
-
-| Rule | Applied when |
+| In the product | The actuarial idea behind it |
 |---|---|
-| Power, $\frac{d}{dx}x^n = nx^{n-1}$ | exponent free of $x$ |
-| Generalised power | base depends on $x$ |
-| Product, $(uv)' = u'v + uv'$ | both factors depend on $x$ |
-| Quotient, $\left(\tfrac{u}{v}\right)' = \tfrac{u'v - uv'}{v^2}$ | denominator depends on $x$ |
-| Chain, $\frac{d}{dx}f(g) = f'(g)\,g'$ | composite functions |
-| Logarithmic, $y' = y\left[v'\ln u + \tfrac{v u'}{u}\right]$ | $x$ in **both** base and exponent, e.g. $x^x$ |
+| A thinly observed skill is pulled toward its domain | Credibility theory: blend individual experience with the collective in proportion to its volume |
+| Mastery is reported with a range, or not at all | Reserving with an explicit margin for uncertainty rather than a point estimate |
+| Recent answers outweigh old ones | Experience weighting in ratemaking |
+| Answer keys are verified by a second, independent method | Model validation: no result is trusted until it is reproduced another way |
+| Insurance contexts in the statistics questions | Expected claim cost, pooled risk and Bayes' theorem as they are used on Exam P |
 
-Definite integrals use **adaptive Simpson quadrature** with Richardson extrapolation:
+## The Lab
 
-$$\int_a^b f\,dx \approx \frac{b-a}{6}\left[f(a) + 4f\!\left(\tfrac{a+b}{2}\right) + f(b)\right]$$
+The [Lab](https://mathforge-blush.vercel.app/lab) holds the tools the project started with, running
+on the same engine that audits the question bank — no computer-algebra library, strict TypeScript,
+zero uses of `any`:
 
-subdividing until the error estimate $|\delta|/15$ falls below tolerance, with a composite
-trapezoid fallback for integrands carrying mild singularities.
+- a recursive-descent parser and a symbolic differentiator that names every rule it applies
+- adaptive Simpson quadrature, LU decomposition, Jacobi eigenvalues
+- nine probability distributions, five parametric mortality laws and life-contingency functions
+- a Monte Carlo laboratory that runs in a Web Worker
 
-### Survival models and life contingencies
-
-Five mortality laws, each with a closed-form cumulative hazard:
-
-| Law | Force of mortality $\mu_x$ |
-|---|---|
-| Exponential | $\mu$ |
-| Gompertz | $Bc^{\,x}$ |
-| Makeham | $A + Bc^{\,x}$ |
-| De Moivre | $\dfrac{1}{\omega - x}$ |
-| Weibull | $\dfrac{k}{\lambda}\left(\dfrac{x}{\lambda}\right)^{k-1}$ |
-
-From which the workbench derives:
-
-$$S(x) = e^{-\Lambda(x)}, \qquad {}_tp_x = \frac{S(x+t)}{S(x)}, \qquad \mathring{e}_x = \int_0^\infty {}_tp_x\,dt$$
-
-$$\bar{A}_x = \int_0^\infty e^{-\delta t}\,{}_tp_x\,\mu_{x+t}\,dt, \qquad \bar{a}_x = \int_0^\infty e^{-\delta t}\,{}_tp_x\,dt, \qquad \bar{P}(\bar{A}_x) = \frac{\bar{A}_x}{\bar{a}_x}$$
-
-The UI displays $\bar{A}_x + \delta\bar{a}_x$ live as a **self-check** — it must equal 1, and any
-drift would expose a quadrature error immediately.
-
-Monte Carlo sampling of the future lifetime $T_x$ uses inverse transform sampling, which has a
-closed form for every law except Makeham — whose mixed linear-plus-exponential hazard is inverted
-by bisection on the strictly increasing cumulative hazard.
-
-### Interest theory
-
-Compound accumulation with a full period-by-period schedule, annuity-immediate and annuity-due
-present values, cash-flow valuation with Macaulay and modified duration and convexity, and IRR by
-bisection — chosen over Newton because a bracketed method on a flat NPV curve cannot diverge.
-
-### Probability
-
-Nine distributions — normal, lognormal, exponential, uniform, gamma, Weibull, binomial, Poisson,
-geometric — each with pdf/pmf, CDF, and closed-form moments, built on special functions implemented
-here: Lanczos $\ln\Gamma$, regularised incomplete gamma $P(a,x)$ and $Q(a,x)$ by series and
-continued fraction, $\mathrm{erf}$ and $\mathrm{erfc}$ derived from them, and the probit function
-via Acklam's rational approximation refined by one Halley step.
-
----
-
-## Testing
-
-Numerical code that isn't pinned against known values is decoration. The suite checks the engine
-against results that can be verified independently.
-
-```
-✓ 48 tests passing
-```
-
-| What is asserted | Against |
-|---|---|
-| $\mathring{e}_x = 1/\mu$ under a constant force | the analytic identity |
-| $\bar{A}_x = \mu/(\mu+\delta)$ and $\bar{a}_x = 1/(\mu+\delta)$ | the analytic identity |
-| $\bar{A}_x = 1 - \delta\bar{a}_x$ for **Gompertz** | a law with no closed form for either side |
-| De Moivre: ${}_tp_x = \frac{\omega-x-t}{\omega-x}$, $\mathring{e}_{40} = 30$ | the uniform-lifetime result |
-| Symbolic derivatives of nine expressions incl. $x^x$, $\tan x$, $\cosh x / x^2$ | central finite differences |
-| 40,000 sampled future lifetimes | the analytic ${}_tp_x$, within 1% |
-| Monte Carlo EPV of a whole-life block | $\mu/(\mu+\delta)$ |
-| GBM terminal mean over 120,000 paths | $S_0e^{\mu T}$ |
-| $A\cdot A^{-1} = I$, a $3\times3$ determinant, Jacobi eigenvalues | hand-computed values |
-| $\Phi(\Phi^{-1}(p)) = p$ across seven probabilities | round-trip to 1e-10 |
-| CLT: simulated spread of sample means | the predicted $\sigma/\sqrt{n}$, within 5% |
-| CLT: skewness of the sampling distribution | falls from 2.0 to below 0.5 as $n$ goes 1 → 30 |
-| Sampling from all nine distributions | their closed-form mean and variance |
-| Identical seeds produce identical results | reproducibility |
-
-```bash
-npm test          # vitest run
-npm run typecheck # tsc --noEmit
-npm run lint      # eslint (flat config)
-npm run build     # next build
-```
-
----
+The engine has its own tests against closed-form results (for example $\bar{A}_x + \delta\bar{a}_x = 1$
+under a Gompertz law, which has no closed form for either term).
 
 ## Project structure
 
 ```
-mathforge/
-├── app/
-│   ├── layout.tsx              # fonts, metadata, pre-paint theme script
-│   ├── page.tsx                # workbench dashboard (server component)
-│   └── globals.css             # oklch design tokens, light and dark
-├── components/
-│   ├── math/
-│   │   ├── mathforge-app.tsx   # hero + all sections, owns the demo signal
-│   │   ├── ap-curriculum-lab.tsx  # the 12 AP problems
-│   │   ├── equation-input.tsx  # palette · validation · KaTeX preview
-│   │   ├── actuarial-visualizer.tsx
-│   │   ├── solution-steps.tsx  # animated derivation accordion
-│   │   ├── graphing-canvas.tsx
-│   │   ├── matrix-workbench.tsx
-│   │   ├── simulation-lab.tsx
-│   │   ├── workbench.tsx
-│   │   ├── chart-tooltip.tsx
-│   │   └── latex.tsx
-│   ├── ui/                     # shadcn-style primitives on Radix
-│   └── site/site-header.tsx
-├── lib/
-│   ├── math-engine.ts          # the whole computation core
-│   ├── ap-curriculum.ts        # AP problem set + actuarial links
-│   ├── simulation-client.ts    # worker / main-thread strategy selection
-│   ├── workers/simulation.worker.ts
-│   ├── theme.ts                # useSyncExternalStore theme store
-│   └── utils.ts
-├── types/math.ts               # the entire domain vocabulary
-└── tests/math-engine.test.ts
+app/                      routes: / diagnostic practice review mock progress lab method
+components/practice/      the practice UI (question view, solution, mock runner, reports)
+components/math/          the Lab (workbench, visualizers, simulation)
+lib/practice/
+  templates/              the question bank, one file per course area
+  question.ts             building and grading questions
+  audit.ts                independent verification of answer keys
+  irt.ts  mastery.ts      response model and hierarchical mastery
+  selection.ts            adaptive practice and the diagnostic
+  mock.ts                 mock test assembly, routing and scoring
+  review.ts               the mistake notebook
+  storage.ts  store.ts    validated localStorage persistence
+lib/math-engine.ts        the expression, calculus, linear algebra and probability engine
+tests/                    template audits, engine tests, model tests
 ```
 
----
+## How this was built
 
-## Engineering decisions worth defending
-
-**`Result<T, EngineError>` rather than exceptions.** A malformed expression is an expected outcome
-of a text input, not an exceptional one. Every fallible engine function returns a discriminated
-union carrying a code, a message, and a character offset — which is why the editor can render a
-caret under the exact offending character instead of a generic "invalid input".
-
-**State derived during render, never in an effect.** Resetting the accordion when a new solution
-arrives, and clamping the distribution threshold when the family changes, are both done by adjusting
-state during render. An effect would produce a frame where the UI shows the previous derivation's
-open panels, or a threshold outside the new support.
-
-**`useSyncExternalStore` for the theme.** `data-theme` on the document element is the single source
-of truth; React subscribes to it rather than mirroring it, so the toggle can never disagree with
-what is painted. An inline pre-paint script applies a stored preference before hydration.
-
-**Discontinuity detection in the plotter.** `samplePlot` emits `null` at poles rather than a large
-number, so the renderer breaks the line instead of drawing a false vertical asymptote through
-$\tan x$.
-
-**Accessibility is structural.** Every disclosure is a real `aria-expanded` button, every slider
-carries an accessible name, charts have `aria-label` descriptions, colour is never the sole carrier
-of meaning, and `prefers-reduced-motion` disables the animations.
-
----
+This project was built with substantial AI assistance (Claude), and the commit history shows that
+openly: most of the implementation is AI-authored. I chose the problem — a practice tool for the
+exams I was preparing for myself — and set what it had to do. What I ask a reader to judge is what
+can be checked independently of who typed it: every statement on the *How it works* page
+corresponds to code in this repository, and the test suite re-derives the answer to every generated
+question by a second method.
 
 ## Running locally
 
@@ -380,19 +151,22 @@ of meaning, and `prefers-reduced-motion` disables the animations.
 git clone https://github.com/dung037517-netizen/mathforge.git
 cd mathforge
 npm install
-npm run dev      # http://localhost:3000
+npm run dev        # http://localhost:3000
+
+npm test           # vitest
+npm run typecheck  # tsc --noEmit
+npm run lint       # eslint
+npm run build      # next build
 ```
 
 Requires Node.js 20 or newer.
 
----
-
 ## Related work
 
-**[FinHub Tracker →](https://github.com/dung037517-netizen/financeflow)** — the same engineering
-approach applied to portfolio risk: Value at Risk by four estimation methods, Black-Scholes with a
-full Greek surface, and a streaming market feed.
+**[FinHub Tracker →](https://github.com/dung037517-netizen/finhub-tracker)** — a planning tool for
+the cost of applying to and attending university abroad.
 
-<div align="center">
-<sub>Built with Next.js, TypeScript, and a math engine written from first principles.</sub>
-</div>
+---
+
+<sub>SAT® and AP® are trademarks registered by the College Board, which is not affiliated with, and
+does not endorse, this site. All questions are original.</sub>
