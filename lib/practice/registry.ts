@@ -6,6 +6,7 @@ import { buildQuestion } from "@/lib/practice/question";
 import { DOMAINS, SKILLS, findSkill } from "@/lib/practice/taxonomy";
 import { AP_CALCULUS_TEMPLATES } from "@/lib/practice/templates/ap-calculus";
 import { AP_STATISTICS_TEMPLATES } from "@/lib/practice/templates/ap-statistics";
+import { EXTENDED_TEMPLATES } from "@/lib/practice/templates/extended";
 import { SAT_ADVANCED_TEMPLATES } from "@/lib/practice/templates/sat-advanced";
 import { SAT_ALGEBRA_TEMPLATES } from "@/lib/practice/templates/sat-algebra";
 import { SAT_DATA_TEMPLATES } from "@/lib/practice/templates/sat-data";
@@ -19,6 +20,7 @@ export const TEMPLATES: readonly Template[] = [
   ...SAT_GEOMETRY_TEMPLATES,
   ...AP_CALCULUS_TEMPLATES,
   ...AP_STATISTICS_TEMPLATES,
+  ...EXTENDED_TEMPLATES,
 ];
 
 const BY_ID: ReadonlyMap<string, Template> = new Map(

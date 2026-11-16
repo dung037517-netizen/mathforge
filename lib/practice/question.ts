@@ -27,12 +27,12 @@ export class QuestionBuildError extends Error {
 
 const VALUE_EPSILON = 1e-9;
 
-function normalise(display: string): string {
+function normalize(display: string): string {
   return display.replace(/\s+/g, "");
 }
 
 function sameOption(a: Option, b: Option): boolean {
-  if (normalise(a.display) === normalise(b.display)) return true;
+  if (normalize(a.display) === normalize(b.display)) return true;
   if (a.value !== undefined && b.value !== undefined) {
     return Math.abs(a.value - b.value) <= VALUE_EPSILON * Math.max(1, Math.abs(a.value));
   }
