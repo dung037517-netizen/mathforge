@@ -369,11 +369,11 @@ export const SAT_GEOMETRY_TEMPLATES: readonly Template[] = [
         steps: [
           step("Use the ratio", "In a 45-45-90 triangle the hypotenuse is $\\sqrt{2}$ times a leg, so a leg is the hypotenuse divided by $\\sqrt{2}$."),
           step(
-            "Divide and rationalise",
+            "Divide and rationalize",
             `$\\dfrac{${2 * a}}{\\sqrt{2}} = \\dfrac{${2 * a}\\sqrt{2}}{2} = ${rootTex(2, a)}$.`,
           ),
         ],
-        hint: "Divide the hypotenuse by √2, then rationalise the denominator.",
+        hint: "Divide the hypotenuse by √2, then rationalize the denominator.",
         audit: { kind: "value", expression: `${2 * a}/sqrt(2)` },
       };
     },
@@ -404,7 +404,7 @@ export const SAT_GEOMETRY_TEMPLATES: readonly Template[] = [
             ...slips(r),
           ],
           steps: [
-            step("Recall the standard form", "$(x - h)^2 + (y - k)^2 = r^2$ is a circle with centre $(h, k)$ and radius $r$."),
+            step("Recall the standard form", "$(x - h)^2 + (y - k)^2 = r^2$ is a circle with center $(h, k)$ and radius $r$."),
             step("Read off the radius", `$r^2 = ${r * r}$, so $r = ${r}$.`),
           ],
           hint: "The right side of the standard form is r², not r.",

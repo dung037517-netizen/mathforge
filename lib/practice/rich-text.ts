@@ -2,7 +2,7 @@
  * Rich text: prose with `$inline$` and `$$display$$` maths.
  *
  * Question text is authored as plain strings so that templates stay readable
- * and serialisable. This module turns such a string into blocks the renderer
+ * and serializable. This module turns such a string into blocks the renderer
  * can lay out, and reports malformed markup so the test suite can reject it
  * before a student ever sees a stray dollar sign.
  */

@@ -1,12 +1,12 @@
 /**
  * Domain vocabulary for the practice platform.
  *
- * The platform is organised as course → domain → skill → template. A template
+ * The platform is organized as course → domain → skill → template. A template
  * is a small program that, given a seed, writes one concrete question together
  * with its answer, its distractors and its worked solution. Everything a
  * student sees is therefore reproducible from four values — template, seed,
  * level and format — which is what makes the review notebook cheap to store
- * and the mock tests impossible to memorise.
+ * and the mock tests impossible to memorize.
  */
 
 /* ------------------------------------------------------------------ */
@@ -30,7 +30,7 @@ export type DomainId =
   | "stats-sampling"
   | "stats-inference";
 
-/** The three subject areas the platform is organised around, plus geometry. */
+/** The three subject areas the platform is organized around, plus geometry. */
 export type Subject = "algebra" | "statistics" | "calculus" | "geometry";
 
 export interface Course {

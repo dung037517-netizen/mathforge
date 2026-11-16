@@ -157,7 +157,7 @@ export const SKILLS: readonly Skill[] = [
     id: "sat-linear-systems",
     domain: "sat-algebra",
     name: "Systems of linear equations",
-    description: "Solve a pair of linear equations and recognise when a system has no solution.",
+    description: "Solve a pair of linear equations and recognize when a system has no solution.",
   },
   {
     id: "sat-linear-inequalities",
@@ -348,7 +348,7 @@ export const SKILLS: readonly Skill[] = [
     id: "stats-sampling-distributions",
     domain: "stats-sampling",
     name: "Sampling distributions",
-    description: "Describe the centre and spread of sample means and proportions.",
+    description: "Describe the center and spread of sample means and proportions.",
   },
   {
     id: "stats-confidence-intervals",

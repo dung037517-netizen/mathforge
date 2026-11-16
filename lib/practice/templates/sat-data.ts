@@ -361,7 +361,7 @@ export const SAT_DATA_TEMPLATES: readonly Template[] = [
         ],
         hint: "The median resists extreme values; the mean does not.",
         insight:
-          "This is why claim-size data, which has a few very large losses, is summarised with medians and percentiles as well as means.",
+          "This is why claim-size data, which has a few very large losses, is summarized with medians and percentiles as well as means.",
       };
     },
   },
@@ -556,7 +556,7 @@ export const SAT_DATA_TEMPLATES: readonly Template[] = [
         steps: [
           step("Restrict to the given group", `Only the ${a + b} Grade 11 students can be selected.`),
           step(
-            "Count the favourable outcomes within that group",
+            "Count the favorable outcomes within that group",
             `$${a}$ of them fit the description, so the probability is $${fracStepTex(a, a + b)}$.`,
           ),
         ],
@@ -590,7 +590,7 @@ export const SAT_DATA_TEMPLATES: readonly Template[] = [
             ...slipsFrac(n - red, n),
           ],
           steps: [
-            step("Count the favourable marbles", `$${blue} + ${green} = ${n - red}$ marbles are not red.`),
+            step("Count the favorable marbles", `$${blue} + ${green} = ${n - red}$ marbles are not red.`),
             step("Divide by all marbles", `There are ${n} marbles, so the probability is $${fracStepTex(n - red, n)}$.`),
           ],
           hint: "Use the complement: not red means blue or green.",
