@@ -7,7 +7,7 @@ import { ImageResponse } from "next/og";
  * therefore sets `display: flex` explicitly, and no CSS grid or custom font is
  * used, so the build cannot fail on a network font fetch.
  */
-export const alt = "MathForge — SAT/AP Calculus Learning Platform";
+export const alt = "MathForge — SAT/AP Math Practice Platform";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SITE_URL } from "@/lib/site";
 import { THEME_BOOTSTRAP_SCRIPT } from "@/lib/theme";
 
 import "./globals.css";
@@ -18,13 +19,11 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const TITLE = "MathForge — SAT/AP Calculus Learning Platform";
+const TITLE = "MathForge — SAT/AP Math Practice Platform";
 const DESCRIPTION =
-  "An interactive learning platform for SAT and AP Calculus AB/BC and AP Statistics. Symbolic " +
-  "differentiation and integration with complete step-by-step derivations, interactive graphing, " +
-  "linear algebra, and a Central Limit Theorem simulator — computed entirely in the browser by a " +
-  "dependency-free engine, with every topic linked to the actuarial technique it becomes.";
-const SITE_URL = "https://mathforge-blush.vercel.app";
+  "Free practice for SAT Math, AP Calculus and AP Statistics. A short diagnostic finds your weak " +
+  "skills, adaptive practice works on them with step-by-step worked solutions, a review notebook " +
+  "brings back every mistake, and timed mock tests follow the digital SAT format.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -37,24 +36,24 @@ export const metadata: Metadata = {
   authors: [{ name: "Dung Nguyen", url: "https://github.com/dung037517-netizen" }],
   creator: "Dung Nguyen",
   keywords: [
+    "SAT math practice",
+    "digital SAT mock test",
     "AP Calculus AB",
     "AP Calculus BC",
     "AP Statistics",
-    "SAT math",
-    "step-by-step derivatives",
-    "definite integrals",
-    "Central Limit Theorem",
-    "Monte Carlo simulation",
+    "step-by-step solutions",
+    "adaptive practice",
+    "diagnostic test",
+    "spaced repetition",
+    "item response theory",
     "actuarial science",
-    "survival models",
-    "life contingencies",
   ],
   alternates: { canonical: "/" },
   openGraph: {
     title: TITLE,
     description:
-      "Step-by-step AP Calculus and Statistics, solved in the browser by a dependency-free engine " +
-      "— with every topic linked to the actuarial technique it becomes.",
+      "Diagnose, practice and review SAT and AP math: adaptive questions with step-by-step " +
+      "solutions, a mistake notebook and digital-SAT-style mock tests.",
     url: SITE_URL,
     siteName: "MathForge",
     type: "website",
@@ -64,7 +63,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description:
-      "Step-by-step AP Calculus and Statistics, solved in the browser by a dependency-free engine.",
+      "Diagnose, practice and review SAT and AP math, with step-by-step solutions and mock tests.",
   },
   robots: {
     index: true,
@@ -89,10 +88,10 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
         <a
-          href="#workbench"
+          href="#main"
           className="sr-only rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
         >
-          Skip to the workbench
+          Skip to the main content
         </a>
         <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
       </body>

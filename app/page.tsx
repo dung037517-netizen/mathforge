@@ -1,5 +1,5 @@
-import { MathForgeApp } from "@/components/math/mathforge-app";
+import { HomePage } from "@/components/practice/home-page";
 
-export default function HomePage() {
-  return <MathForgeApp />;
+export default function Page() {
+  return <HomePage />;
 }
